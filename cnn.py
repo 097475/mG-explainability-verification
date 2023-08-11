@@ -20,9 +20,9 @@ if __name__ == '__main__':
                                                                             max_num_digits_per_image=4,
                                                                             num_classes=3,
                                                                             labels_are_exclusive=False)
-    i = np.random.randint(len(train_x))
-    print(train_x[i].shape)
-    print(train_y[i].shape)
+    # i = np.random.randint(len(train_x))
+    # print(train_x[i].shape)
+    # print(train_y[i].shape)
     # display_grayscale_array(array=train_x[i])
     # display_segmented_image(y=train_y[i])
 
