@@ -1,7 +1,6 @@
 from matplotlib import pyplot as plt
 from spektral.data import DisjointLoader
-from spektral.layers import GCNConv, GeneralConv, GraphSageConv, GATConv
-from spektral.models import GCN
+from spektral.layers import GATConv, ChebConv
 from spektral.transforms import LayerPreprocess
 
 from mnist_dataset import MnistSegmentationDataset
@@ -12,54 +11,26 @@ from simple_deep_learning.mnist_extended.semantic_segmentation import (create_se
 import numpy as np
 
 import tensorflow as tf
-from keras import models, layers, Sequential, Input
-
-import spektral
-
-
-from libmg import print_layer
 
 
 if __name__ == '__main__':
-    dataset = MnistSegmentationDataset(num_samples=1200, image_shape=(60, 60), max_num_digits_per_image=4, num_classes=3, labels_are_exclusive=False)
+    dataset = MnistSegmentationDataset(num_samples=1200, image_shape=(60, 60), max_num_digits_per_image=4, num_classes=3, labels_are_exclusive=False, transforms=[LayerPreprocess(ChebConv)])
     dataset_train = dataset[:-200]
     dataset_val = dataset[-200:]
 
     loader_train = DisjointLoader(dataset_train, batch_size=10, node_level=True)
     loader_val = DisjointLoader(dataset_val, node_level=True)
 
-    X_in = Input(shape=(1, ))
-    A_in = Input(shape=(None,), sparse=True)
-    I_in = Input(shape=())
-    x1 = GATConv(channels=256, attn_heads=4, activation='elu')([X_in, A_in])
-    x2 = GATConv(channels=256, attn_heads=4, activation='elu')([x1, A_in])
-    '''
-    x3 = GATConv(channels=32, attn_heads=8, activation='elu')([x2, A_in])
-    x4 = GATConv(channels=32, attn_heads=8, activation='elu')([x3, A_in])
-    x5 = GATConv(channels=32, attn_heads=8, activation='elu')([x4, A_in])
-    x6 = GATConv(channels=32, attn_heads=8, activation='elu')([x5, A_in])
-    x7 = GATConv(channels=32, attn_heads=8, activation='elu')([x6, A_in])
-    x8 = GATConv(channels=32, attn_heads=8, activation='elu')([x7, A_in])
-    x9 = GATConv(channels=32, attn_heads=8, activation='elu')([x8, A_in])
-    '''
-    x_out = GATConv(channels=dataset.n_labels, attn_heads=6, concat_heads=False, activation='sigmoid')([x2, A_in])
+    X_in = tf.keras.Input(shape=(1, ))
+    A_in = tf.keras.Input(shape=(None,), sparse=True)
+    I_in = tf.keras.Input(shape=())
+    x1 = ChebConv(channels=32, K=25, activation='relu')([X_in, A_in])
+    x2 = ChebConv(channels=64, K=25, activation='relu')([x1, A_in])
+    x_out = ChebConv(channels=dataset.n_labels, K=25, activation='sigmoid')([x2, A_in])
 
     model = tf.keras.Model(inputs=[X_in, A_in, I_in], outputs=x_out)
     model.summary()
 
-    '''
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=32, activation='relu'))
-    model.add(GCNConv(channels=16, activation='relu'))
-    
-    model.add(GCNConv(channels=dataset.n_labels, activation='sigmoid'))
-    '''
 
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.BinaryCrossentropy(),
