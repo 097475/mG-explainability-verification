@@ -1,3 +1,5 @@
 spektral
 networkx
 git+https://github.com/Unicam-mG/mG.git@develop
+torch
+torch_geometric

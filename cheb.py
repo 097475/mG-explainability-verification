@@ -3,7 +3,7 @@ from spektral.data import DisjointLoader
 from spektral.layers import GATConv, ChebConv
 from spektral.transforms import LayerPreprocess
 
-from mnist_dataset import MnistSegmentationDataset
+from mnist_segmentation_dataset import MnistSegmentationDataset, MnistSegmentationChebDataset
 from simple_deep_learning.mnist_extended.semantic_segmentation import (create_semantic_segmentation_dataset,
                                                                        display_segmented_image,
                                                                        display_grayscale_array,
@@ -14,7 +14,8 @@ import tensorflow as tf
 
 
 if __name__ == '__main__':
-    dataset = MnistSegmentationDataset(num_samples=1200, image_shape=(60, 60), max_num_digits_per_image=4, num_classes=3, labels_are_exclusive=False, transforms=[LayerPreprocess(ChebConv)])
+    # dataset = MnistSegmentationDataset(num_samples=1200, image_shape=(60, 60), max_num_digits_per_image=4, num_classes=3, labels_are_exclusive=False, transforms=[LayerPreprocess(ChebConv)])
+    dataset = MnistSegmentationChebDataset(num_samples=1200, image_shape=(60, 60), max_num_digits_per_image=4, num_classes=3, labels_are_exclusive=False, use_edge_features=False)
     dataset_train = dataset[:-200]
     dataset_val = dataset[-200:]
 
@@ -24,12 +25,14 @@ if __name__ == '__main__':
     X_in = tf.keras.Input(shape=(1, ))
     A_in = tf.keras.Input(shape=(None,), sparse=True)
     I_in = tf.keras.Input(shape=())
-    x1 = ChebConv(channels=32, K=25, activation='relu')([X_in, A_in])
-    x2 = ChebConv(channels=64, K=25, activation='relu')([x1, A_in])
-    x_out = ChebConv(channels=dataset.n_labels, K=25, activation='sigmoid')([x2, A_in])
+    x1 = ChebConv(channels=32, K=12, activation='relu')([X_in, A_in])
+    x2 = ChebConv(channels=64, K=12, activation='relu')([x1, A_in])
+    x_out = ChebConv(channels=dataset.n_labels, K=12, activation='sigmoid')([x2, A_in])
 
     model = tf.keras.Model(inputs=[X_in, A_in, I_in], outputs=x_out)
     model.summary()
+
+    exit()
 
 
     model.compile(optimizer='adam',

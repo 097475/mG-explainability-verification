@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 from spektral.data import DisjointLoader
 from spektral.layers import GATConv, AGNNConv, EdgeConv, TAGConv
 
-from mnist_dataset import MnistSegmentationDataset
+from mnist_segmentation_dataset import MnistSegmentationDataset
 from simple_deep_learning.mnist_extended.semantic_segmentation import (create_semantic_segmentation_dataset,
                                                                        display_segmented_image,
                                                                        display_grayscale_array,
